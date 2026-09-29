@@ -101,8 +101,12 @@ def main() -> int:
                 "as": r.get("answer_status", "ok"),
                 "dg": r.get("data_gaps", []),
                 "p": r["chapter"],
+                "sec": r["section"],
                 "n": r["number"],
                 "tx": snippet,
+                # full plain-text projection: makes search actually cover
+                # stem + options + solution, as the README claims
+                "pl": r["plain"] or "",
             })
 
     # ---- full records, sharded by year

@@ -103,6 +103,19 @@ ck("manifest.assets 与实际一致",
    mf["assets"]["referenced"] == len(refs) and mf["assets"]["missing"] == 0,
    str(mf["assets"]))
 
+print("== 6.5 数学段内危险字符（P1 疫苗）==")
+# The HTML parser runs before MathJax, so a bare '<' + letter inside a math
+# span is eaten as a tag start and the formula silently never renders.
+# This was a blind spot: the older check only looked the OTHER way (macros
+# leaking OUTSIDE math).
+danger = 0
+for r in rich:
+    for f in ("problem_html", "solution_html", "answer_html"):
+        for seg, is_math, _d in LR.split_math(r.get(f) or ""):
+            if is_math and ("<" in seg or ">" in seg):
+                danger += 1
+ck("数学段内无裸 < 或 >（HTML 吞标签）", danger == 0, f"{danger} 段")
+
 print("== 7. 知识点 ==")
 un = sum(1 for r in rich if not r["knowledge"])
 ck("标签覆盖率 ≥ 95%", un / N <= 0.05, f"untagged {un} ({un/N*100:.1f}%)")
@@ -111,6 +124,13 @@ ck("难度均在 1..5", all(1 <= r["difficulty"] <= 5 for r in rich))
 ck("derived 答案已刷新 has_answer",
    all(r["has_answer"] == bool(r["answer_tex"].strip())
        for r in rich if r["answer_status"] == "derived"))
+
+print("== 7.5 搜索字段完整性 ==")
+idxj = json.loads((SITE / "data" / "index.json").read_text(encoding="utf-8"))
+ck("index 记录含全文检索字段 pl", all("pl" in r for r in idxj))
+ck("pl 覆盖 pl/stem 两种来源", sum(1 for r in idxj if r.get("pl")) == N)
+ck("地区 facet 全部 33 个可筛（不再截断 16）",
+   len(idxj and {r["r"] for r in idxj}) == 33)
 
 print("== 8. 元数据 ==")
 ck("无空地区", all(r["region_cn"] for r in recs))

@@ -37,6 +37,17 @@
     });
   }
 
+  // Exports used to read findRec() synchronously; if a year shard had not
+  // finished loading the record was null and the export silently shipped
+  // empty content with answer_status "ok". Always await this first.
+  function ensureShards(ids) {
+    var years = {};
+    ids.forEach(function (id) { years[id.split('|')[0]] = 1; });
+    var keys = Object.keys(years);
+    if (!keys.length) return Promise.resolve();
+    return Promise.all(keys.map(shard));
+  }
+
   function shard(year) {
     if (SHARDS[year]) return Promise.resolve(SHARDS[year]);
     return fetch(M.shards[year]).then(function (r) { return r.json(); })
@@ -58,8 +69,10 @@
     if (F.fig && !r.f) return false;
     if (F.sol && !r.s) return false;
     if (Q) {
+      // r.pl is the full stem+options+solution projection; r.tx is only the
+      // 110-char preview used for display
       var hay = (r.p + ' ' + r.r + ' ' + r.t + ' ' + r.tyc + ' ' +
-                 (r.kn || []).join(' ') + ' ' + (r.tx || '')).toLowerCase();
+                 (r.kn || []).join(' ') + ' ' + (r.pl || r.tx || '')).toLowerCase();
       if (hay.indexOf(Q) < 0) return false;
     }
     return true;
@@ -113,8 +126,17 @@
         if (k === 'point' || k === 'chapter') return b.c - a.c;
         return b.c - a.c;
       });
-      if (k === 'region') items = items.slice(0, 16);
+      // every region must be reachable: 17 of 33 were silently hidden,
+      // making thousands of questions unfilterable by province
       fillFacet(el, items, k);
+      if (k === 'region' && items.length > 16) {
+        Array.prototype.forEach.call(el.children, function (li, i) {
+          if (i >= 16) li.hidden = true;
+        });
+        el.insertAdjacentHTML('beforeend',
+          '<li class="more" data-more="1" data-expanded="0">展开其余 ' +
+          (items.length - 16) + ' 个地区 ▾</li>');
+      }
     });
     $('#c-fig').textContent = IDX.filter(function (r) { return r.f; }).length.toLocaleString();
     $('#c-sol').textContent = IDX.filter(function (r) { return r.s; }).length.toLocaleString();
@@ -177,7 +199,8 @@
         '<button class="btn mini' + (inCart ? ' on' : '') + '" data-act="cart">' +
           (inCart ? '已在试卷中 ✓' : '加入试卷') + '</button>' +
         '<button class="btn mini" data-act="json">导出本题</button>' +
-        '<span class="hint">' + esc(r.p) + ' 第' + r.n + '题</span>' +
+        '<span class="hint">' + esc(r.p) + ' · ' + esc(r.sec || '') +
+          ' 第' + r.n + '题</span>' +
       '</div>' +
       '<div class="full" hidden></div>' +
     '</article>';
@@ -389,6 +412,7 @@
 
   /* ------------------------------------------------------------ exports */
   function exportJSON() {
+    return ensureShards(CART).then(function () {
     var out = CART.map(function (id) {
       var r = findRec(id) || {}, li = findLight(id) || {};
       return {
@@ -404,9 +428,11 @@
       };
     });
     dl(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }), 'gaokao_paper.json');
+    });
   }
 
   function exportTEX() {
+    return ensureShards(CART).then(function () {
     var out = '\\documentclass[12pt]{article}\n\\usepackage{amsmath,amssymb,ctex}\n' +
       '\\begin{document}\n';
     CART.forEach(function (id) {
@@ -437,6 +463,7 @@
     });
     out += '\\end{document}\n';
     dl(new Blob([out], { type: 'text/plain' }), 'gaokao_paper.tex');
+    });
   }
 
   function dl(blob, name) {
@@ -502,6 +529,20 @@
         var k = fli.dataset.flag;
         F[k] = !F[k]; fli.classList.toggle('on', F[k]);
         PAGE = 1; render(); return;
+      }
+      var more = t.closest('.facet li[data-more]');
+      if (more) {
+        var list = more.parentNode;
+        var items = Array.prototype.filter.call(list.children, function (li) {
+          return !li.dataset.more; });
+        // dataset.expanded === '1' means "currently showing all"
+        var expanded = more.dataset.expanded === '1';
+        items.forEach(function (li, i) { li.hidden = expanded ? i >= 16 : false; });
+        more.dataset.expanded = expanded ? '0' : '1';
+        more.textContent = expanded
+          ? '展开其余 ' + (items.length - 16) + ' 个地区 ▾'
+          : '收起 ▴';
+        return;
       }
       var fac = t.closest('.facet li');
       if (fac) {

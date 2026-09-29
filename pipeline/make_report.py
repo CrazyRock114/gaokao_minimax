@@ -274,7 +274,7 @@ def main() -> int:
            ["题图", f"{n_fig:,} 题有图 / {manifest_figs} 个图文件，缺失 {manifest_missing}",
             "只复制被引用的图，复制时逐个校验存在性"],
            ["选项缺失", f"{gaps.get('options_missing',0)}", "原卷未收录选项（上游数据缺口）"],
-           ["答案状态", " / ".join(f"{k} {v}" for k, v in ans_status.items()),
+           ["答案状态", " / ".join(f"{k} {v:,}" for k, v in ans_status.items()),
             "conflicted = 上游整理者标注原卷题面存在问题，非本系统臆造"],
            ["知识点未打标", f"{untagged}", "无任何知识点命中的题目"],
            ["文理越界标记", f"{cross:,}", "文科题命中理科专属知识点（多为文本歧义，已保留为质量信号）"],

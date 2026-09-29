@@ -168,12 +168,13 @@ def merge_scores(stem: dict, sol: dict, choices: dict, track: str,
 
     # Conics are mutually exclusive families. Without this, a 双曲线 problem
     # (whose solution also says 焦点/焦距/准线) wins 椭圆 on raw keyword count.
-    if "双曲线" in joined:
-        merged = [m for m in merged if m["code"] != "ANAL2"] or merged
-    if "抛物线" in joined:
-        merged = [m for m in merged if m["code"] != "ANAL2"] or merged
-    if "椭圆" in joined:
-        merged = [m for m in merged if m["code"] != "ANAL3"] or merged
+    conics = {"椭圆": ("ANAL2", {"ANAL3", "ANAL4"}),
+              "双曲线": ("ANAL3", {"ANAL2", "ANAL4"}),
+              "抛物线": ("ANAL4", {"ANAL2", "ANAL3"})}
+    for word, (_keep, _drop) in conics.items():
+        if word in joined:
+            merged = [m for m in merged if m["code"] not in _drop] or merged
+            break
     merged.sort(key=lambda x: (-x["score"], x["code"]))
 
     if merged:
@@ -265,7 +266,10 @@ def main() -> int:
             r["solution_html"] = sh
             r["figures"] = sorted(set(figs) | set(r.get("figures", [])))
             r["figures_solution"] = sorted(set(sfigs) | set(r.get("figures_solution", [])))
-            r["has_figure"] = bool(r["figures"] or r["figures_solution"])
+            # option images count too: 155 questions carry their choices only
+            # as bitmaps, so a stem/solution-only test missed them entirely
+            r["has_figure"] = bool(r["figures"] or r["figures_solution"]
+                                   or any('src="' in c for c in r["choices_html"]))
             r["plain"] = plain
 
             # --- knowledge tagging: stem = what is asked, solution = how it is

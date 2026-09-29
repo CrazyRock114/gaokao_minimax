@@ -336,6 +336,17 @@ def tex_to_html(tex: str, figure_prefix: str = "") -> tuple[str, list[str]]:
         if is_math:
             body = seg.strip()
             if body:
+                # The HTML parser runs BEFORE MathJax, so a bare '<' followed by
+                # a letter inside a math span is eaten as a tag start and the
+                # formula silently never renders. Escaping to entities makes
+                # the DOM text identical to the intended LaTeX, so MathJax
+                # (and \text{...} inside it) behaves exactly as before.
+                # \<len> is LaTeX row spacing ("\\[0.5ex]"). The inner "["
+                # reads as a display-math opener to MathJax's delimiter
+                # scanner, so drop the optional length (web rendering has no
+                # use for the extra leading anyway).
+                body = re.sub(r"\\\\\[[^\]]*\]", r"\\\\", body)
+                body = body.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 html_parts.append(("\\[" + body + "\\]") if display
                                   else ("\\(" + body + "\\)"))
         else:
