@@ -1,0 +1,26 @@
+# ---- 上游原始仓库（第三方，体量大，不入库；用 scripts/fetch_sources.sh 拉取）----
+/vendor_deekur/
+/vendor_dxathing/
+
+# ---- 可由 pipeline 重新生成的结构化中间产物（约 106 MB）----
+/data/problems.jsonl
+/data/problems_rich.jsonl
+/data/stats.json
+/data/macro_report.json
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- 系统/编辑器 ----
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+*~
+
+# ---- 本地临时 ----
+*.log

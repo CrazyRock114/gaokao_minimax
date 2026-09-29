@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>高考数学真题题库 · 1952–2026</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c4f8b'/%3E%3Ctext x='16' y='23' font-size='19' font-family='Georgia,serif' fill='white' text-anchor='middle'%3E%E2%88%AB%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script>
+window.MathJax = {
+  tex: {inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']]},
+  chtml: {scale: 1.0},
+  options: {skipHtmlTags: ['script','noscript','style','textarea','pre','code']}
+};
+</script>
+<script id="MathJax-script" async src="vendor/mathjax/tex-chtml.js"></script>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-in">
+    <div class="brand">
+      <b>高考数学真题题库</b>
+      <span id="brandsub">1952–2026</span>
+    </div>
+    <div class="search" id="searchWrap">
+      <input id="q" type="search" placeholder="搜索题干、答案、解析…（如 椭圆 / 导数 / 数列 / 概率）" autocomplete="off">
+      <button class="clr" id="qclr" title="清除">×</button>
+    </div>
+    <div class="tabs">
+      <button data-view="browse" class="on">题库</button>
+      <button data-view="paper">组卷</button>
+      <button data-view="stats">数据分析</button>
+    </div>
+    <button class="cartbtn" id="cartbtn">我的试卷 <b id="cartn">0</b></button>
+  </div>
+</div>
+
+<!-- ============================ BROWSE ============================ -->
+<div class="wrap" id="view-browse">
+  <aside class="side">
+    <div class="fgroup">
+      <h4>年份</h4>
+      <div class="rng">
+        <input id="y0" type="number" placeholder="1952" min="1952" max="2026">
+        <span>–</span>
+        <input id="y1" type="number" placeholder="2026" min="1952" max="2026">
+      </div>
+      <ul class="facet" id="f-decade"></ul>
+    </div>
+    <div class="fgroup"><h4>地区</h4><ul class="facet" id="f-region"></ul></div>
+    <div class="fgroup"><h4>科类</h4><ul class="facet" id="f-track"></ul></div>
+    <div class="fgroup"><h4>题型</h4><ul class="facet" id="f-type"></ul></div>
+    <div class="fgroup"><h4>难度</h4><ul class="facet" id="f-diff"></ul></div>
+    <div class="fgroup"><h4>知识点</h4><ul class="facet" id="f-chapter"></ul><ul class="facet" id="f-point"></ul></div>
+    <div class="fgroup">
+      <h4>属性</h4>
+      <div class="frow" data-flag="fig"><span>仅含题图</span><span class="c" id="c-fig"></span></div>
+      <div class="frow" data-flag="sol"><span>含详细解析</span><span class="c" id="c-sol"></span></div>
+    </div>
+    <div class="fgroup">
+      <button class="btn" id="reset" style="width:100%">清除全部筛选</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="toolbar">
+      <div class="count">共 <b id="nres">0</b> 道题</div>
+      <div class="selinfo" id="selinfo"></div>
+    </div>
+    <div id="cards" class="cards"></div>
+    <div class="pager" id="pager"></div>
+  </main>
+</div>
+
+<!-- ============================ PAPER ============================ -->
+<div class="wrap" id="view-paper" style="display:none">
+  <aside class="side">
+    <div class="fgroup">
+      <h4>试卷操作</h4>
+      <div class="ptools" style="flex-direction:column;align-items:stretch">
+        <button class="btn pri" id="p-print">打印 / 导出 PDF</button>
+        <button class="btn" id="p-json">导出 JSON（含答案解析）</button>
+        <button class="btn" id="p-tex">导出 LaTeX</button>
+        <button class="btn" id="p-noans">切换：只含题目 / 含答案</button>
+        <button class="btn" id="p-clear">清空试卷</button>
+      </div>
+    </div>
+    <div class="fgroup"><h4>统计</h4><div id="pstat" class="hint"></div></div>
+  </aside>
+  <main class="main">
+    <div class="paper" id="paper">
+      <h2>组卷</h2>
+      <div class="sub">在“题库”中点击「加入试卷」添加题目</div>
+    </div>
+  </main>
+</div>
+
+<!-- ============================ STATS ============================ -->
+<div class="wrap" id="view-stats" style="display:none">
+  <div style="grid-column:1/-1">
+    <div class="rep" id="report">
+      <div class="loading">载入分析报告…</div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
